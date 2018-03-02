@@ -1,0 +1,91 @@
+var app = new Vue({
+  el: '#app',
+  data: {
+    number: '',
+    max: '',
+    current: {},
+    loading: true,
+    addedName: '',
+    addedComment: '',
+    addedTime: '',
+    comments: {},
+    stars: {},
+    rating: 0,
+    averageRating: '',
+  },
+  created: function() {
+    this.xkcd();
+    Vue.component('star-rating', VueStarRating.default);
+  },
+  
+  
+  watch: {
+    number: function(value,oldvalue) {
+      if (oldvalue === '') {
+	this.max = value;
+      } else {
+	this.xkcd();
+      }
+    },
+    rating: function(value, oldvalue) {
+      if (!(this.number in this.stars)) {
+        console.log("make new");
+        Vue.set(app.stars, this.number, new Array);
+      }
+      this.stars[this.number].push(this.rating); 
+      var average = 0;  
+      for (i = 0; i < this.stars[this.number].length;i++) {
+        average+=this.stars[this.number][i];
+      }
+      average = average/this.stars[this.number].length;
+      this.averageRating = average;
+    },
+  },
+  
+  methods: {
+    xkcd: function() {
+      this.loading = true;
+      fetch('https://ron-swanson-quotes.herokuapp.com/v2/quotes').then(response => {
+			return response.json();
+      }).then(json => {
+			this.current = json;
+			this.loading = false;
+			this.joke = json;
+			this.number = json.num;
+			if (!(this.number in this.stars)) {
+          this.averageRating = 0;
+        } else {
+          var average = 0;  
+          for (i = 0; i < this.stars[this.number].length;i++) {
+            average+=this.stars[this.number][i];
+          }
+          average = average/this.stars[this.number].length;
+          this.averageRating = average;
+        }
+			return true;
+      }).catch(err => {
+			this.number = this.max;
+      });
+    },
+    
+    getRandom: function(min, max) {
+      min = Math.ceil(min);
+      max = Math.floor(max);
+      return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum and minimum are inclusive 
+    },
+    
+    randomComic: function() {
+      this.number = this.getRandom(1, this.max);
+    },
+    addComment: function() {
+      if (!(this.number in this.comments))
+        Vue.set(app.comments, this.number, new Array);
+      this.comments[this.number].push({author:this.addedName,text:this.addedComment, time:Date()});
+      this.addedName = '';
+      this.addedComment = '';
+      this.addedTime = '';
+    },
+  	 
+  	},
+
+});

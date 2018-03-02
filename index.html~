@@ -7,7 +7,7 @@
   </head>
   <body>
     <div id="app">
-      <center><h1>The Ron Machine</h1></center>
+      <center><h1>Ron Machine</h1></center>
       <div v-if="loading">
 			<p>Loading...</p>
       </div>
